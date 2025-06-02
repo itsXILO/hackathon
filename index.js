@@ -83,6 +83,33 @@ app.post('/questions/:qid/answers/:aid/upvote', async (req, res) => {
     res.redirect('/questions');
 });
 
+app.post('/clear-db', async (req, res) => {
+    const db = await openDb();
+    // Disable foreign key checks to allow truncation
+    await db.run('PRAGMA foreign_keys = OFF');
+    await db.run('DELETE FROM answers');
+    await db.run('DELETE FROM questions');
+    await db.run('DELETE FROM users');
+    // Reset auto-increment counters for SQLite
+    await db.run('DELETE FROM sqlite_sequence WHERE name IN ("users", "questions", "answers")');
+    await db.run('PRAGMA foreign_keys = ON');
+    await db.close();
+    res.send('Database cleared!');
+});
+
+app.post('/delete-all-qa', async (req, res) => {
+    const db = await openDb();
+    // Disable foreign key checks to allow truncation
+    await db.run('PRAGMA foreign_keys = OFF');
+    await db.run('DELETE FROM answers');
+    await db.run('DELETE FROM questions');
+    // Reset auto-increment counters for SQLite
+    await db.run('DELETE FROM sqlite_sequence WHERE name IN ("questions", "answers")');
+    await db.run('PRAGMA foreign_keys = ON');
+    await db.close();
+    res.send('All questions and answers deleted!');
+});
+
 app.use('/', authRoutes);
 
 app.get("/", (req, res) => {
